@@ -17,7 +17,7 @@ class Learner(object):
         self.epsilon = 1 # Wasay: SARSA and Qlearn parameter
         self.gamma = 0.5 # Wasay: discount factor
         self.alpha = 0.2 # Wasay: learning rate
-        self.bin_width = 25 # Wasay: set the bin width
+        self.bin_width = 100 # Wasay: set the bin width
         self.Q = {} # Wasay: the Q-value dictionary Q[state] = [r_a_1,r_a_2]
 
     def reset(self):
@@ -59,7 +59,7 @@ class Learner(object):
         Q_ls_la = self.Q[b_last_state][last_action] # Q(S,a)
         Q_cs_ca = self.Q[b_current_state][current_action] # Q(S',a')
 
-        self.Q[b_last_state][last_action]= Q_ls_la + self.alpha*(self.last_reward + self.gamma*(Q_cs_ca - Q_ls_la))
+        self.Q[b_last_state][last_action]= Q_ls_la + self.alpha*((self.last_reward + self.gamma*(Q_cs_ca)) - Q_ls_la)
 
         return current_action
 
@@ -73,7 +73,7 @@ class Learner(object):
         Q_ls_la = self.Q[b_last_state][last_action] # Q(S,a)
         max_Q_cs_ca = max(self.Q[b_current_state]) # max_a Q(S',a')
 
-        self.Q[b_last_state][last_action]= Q_ls_la + self.alpha*(self.last_reward + self.gamma*(max_Q_cs_ca - Q_ls_la))
+        self.Q[b_last_state][last_action]= Q_ls_la + self.alpha*((self.last_reward + self.gamma*(max_Q_cs_ca)) - Q_ls_la)
 
         # Epsilon greedy action:
         if npr.rand()<self.epsilon:
@@ -126,8 +126,8 @@ class Learner(object):
         
         # You might do some learning here based on the current state and the last state.
 
-        #current_action = self.SARSA(b_last_state,self.last_action,self.last_reward,b_current_state)
-        current_action = self.Qlearn(b_last_state,self.last_action,self.last_reward,b_current_state)
+        current_action = self.SARSA(b_last_state,self.last_action,self.last_reward,b_current_state)
+        #current_action = self.Qlearn(b_last_state,self.last_action,self.last_reward,b_current_state)
 
 
         # You'll need to select and action and return it.
