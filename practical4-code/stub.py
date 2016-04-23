@@ -15,9 +15,9 @@ class Learner(object):
         self.last_action = None
         self.last_reward = None
         self.epsilon = 1 # Wasay: SARSA and Qlearn parameter
-        self.gamma = 0.5 # Wasay: discount factor
+        self.gamma = 1 # Wasay: discount factor
         self.alpha = 0.2 # Wasay: learning rate
-        self.bin_width = 100 # Wasay: set the bin width
+        self.bin_width = 50 # Wasay: set the bin width
         self.Q = {} # Wasay: the Q-value dictionary Q[state] = [r_a_1,r_a_2]
 
     def reset(self):
@@ -96,12 +96,14 @@ class Learner(object):
         ## a random action:
 
         if self.last_state==None:
-            current_action = npr.rand() < 0.1
             current_state  = state
 
             b_current_state = self.bin_state(state)
-            self.Q[b_current_state]=[npr.rand(),npr.rand()]
 
+            if b_current_state not in self.Q.keys():
+                self.Q[b_current_state]=[0,0]
+
+            current_action = np.argmax(self.Q[b_current_state])
             self.last_action = current_action
             self.last_state  = current_state
 
@@ -126,8 +128,8 @@ class Learner(object):
         
         # You might do some learning here based on the current state and the last state.
 
-        current_action = self.SARSA(b_last_state,self.last_action,self.last_reward,b_current_state)
-        #current_action = self.Qlearn(b_last_state,self.last_action,self.last_reward,b_current_state)
+        #current_action = self.SARSA(b_last_state,self.last_action,self.last_reward,b_current_state)
+        current_action = self.Qlearn(b_last_state,self.last_action,self.last_reward,b_current_state)
 
 
         # You'll need to select and action and return it.
@@ -181,7 +183,7 @@ if __name__ == '__main__':
 	hist = []
 
 	# Run games. 
-	run_games(agent, hist, 100, 10)
+	run_games(agent, hist, 1000, 10)
 
 	# Save history. 
 	np.save('hist',np.array(hist))
