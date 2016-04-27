@@ -1,9 +1,9 @@
 # Imports.
 import numpy as np
 import numpy.random as npr
-
 from SwingyMonkey import SwingyMonkey
-
+import matplotlib.pyplot as plt
+import pandas as pd
 
 class Learner(object):
     '''
@@ -19,12 +19,13 @@ class Learner(object):
         self.alpha = 0.2 # Wasay: learning rate
         self.bin_width = 50 # Wasay: set the bin width
         self.Q = {} # Wasay: the Q-value dictionary Q[state] = [r_a_1,r_a_2]
+        self.specialinitialization=True
 
     def reset(self):
         self.last_state  = None
         self.last_action = None
         self.last_reward = None
-        print "restarted"
+        #print "restarted"
 
     # Wasay: The function that bins the states:
 
@@ -33,11 +34,10 @@ class Learner(object):
 
         ## 1: Take all the numbers from the state put it in an array and divide the array by 
         ##### bin_width.
-
         binned_state = np.array(state['monkey'].values()+state['tree'].values()) / self.bin_width  
-       
+        #[M_vel, M_bot, M_top,T_bot, T_top, T_dist]
+        
         ## 2: Convert this array into a string
-
         str_binned_state = np.array_str(binned_state)
 
         return str_binned_state
@@ -99,11 +99,20 @@ class Learner(object):
             current_state  = state
 
             b_current_state = self.bin_state(state)
-
+            
             if b_current_state not in self.Q.keys():
-                self.Q[b_current_state]=[0,0]
-
+                if self.specialinitialization==True:
+                    if state['monkey']['bot']/ self.bin_width ==0 or state['monkey']['bot']/ self.bin_width ==1:
+                        self.Q[b_current_state]=[0,1]
+                    elif state['monkey']['top']/ self.bin_width == 9 or state['monkey']['bot']/ self.bin_width ==8:
+                        self.Q[b_current_state]=[1,0]
+                    else:    
+                        self.Q[b_current_state]=[0,0]
+                else:
+                    self.Q[b_current_state]=[0,0]
+                    
             current_action = np.argmax(self.Q[b_current_state])
+            #print current_action
             self.last_action = current_action
             self.last_state  = current_state
 
@@ -113,24 +122,28 @@ class Learner(object):
 
         b_current_state = self.bin_state(state)
         b_last_state = self.bin_state(self.last_state)
+        #print b_current_state
         
         # Wasay: Check if we are encountering this state for the first time or we have seen 
         ## it before:
 
         if b_current_state not in self.Q.keys():
-            # Wasay: Initialize arbitrarily
-            #self.Q[b_current_state]=[npr.rand(),npr.rand()]
-            self.Q[b_current_state]=[0,0]
+            if self.specialinitialization==True:
+                if state['monkey']['bot']/ self.bin_width ==0 or state['monkey']['bot']/ self.bin_width ==1:
+                    self.Q[b_current_state]=[0,1]
+                elif state['monkey']['top']/ self.bin_width == 9 or state['monkey']['bot']/ self.bin_width ==8:
+                    self.Q[b_current_state]=[1,0]
+                else:    
+                    self.Q[b_current_state]=[0,0]
+            else:
+                self.Q[b_current_state]=[0,0]
         else: 
-            print "state repeated"
+            pass #print "state repeated"
 
-
-        
         # You might do some learning here based on the current state and the last state.
 
         #current_action = self.SARSA(b_last_state,self.last_action,self.last_reward,b_current_state)
         current_action = self.Qlearn(b_last_state,self.last_action,self.last_reward,b_current_state)
-
 
         # You'll need to select and action and return it.
         # Return 0 to swing and 1 to jump.
@@ -183,9 +196,23 @@ if __name__ == '__main__':
 	hist = []
 
 	# Run games. 
-	run_games(agent, hist, 1000, 10)
+	run_games(agent, hist, 200, 5)
 
 	# Save history. 
 	np.save('hist',np.array(hist))
 
+hist1=hist
 
+#df=pd.DataFrame(hist, columns=['Initialization0'])
+df['Initialization1']=hist1
+df['Initialization0_20ma']=pd.rolling_mean(df['Initialization0'],20,20)
+df['Initialization1_20ma']=pd.rolling_mean(df['Initialization1'],20,20)
+
+plt.figure(figsize=(8,8))
+plt.plot(df['Initialization0'],'ro', markersize=4)
+plt.plot(df['Initialization1'],'bo', markersize=4)
+plt.plot(df['Initialization0_20ma'],'red',linewidth=2.0)
+plt.plot(df['Initialization1_20ma'],'blue',linewidth=1.5)
+
+
+np.argmax([0,1])
