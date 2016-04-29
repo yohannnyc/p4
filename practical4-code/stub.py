@@ -5,21 +5,24 @@ from SwingyMonkey import SwingyMonkey
 import matplotlib.pyplot as plt
 import pandas as pd
 
+#Team: Swingy Pandas
+
 class Learner(object):
     '''
-    This agent jumps randomly.
+    This agent is super-smart
     '''
 
-    def __init__(self):
+    def __init__(self,epsilon,gamma,alpha,bin_width,specialinitialization,ql):
         self.last_state  = None
         self.last_action = None
         self.last_reward = None
-        self.epsilon = 1 # Wasay: SARSA and Qlearn parameter
-        self.gamma = 1 # Wasay: discount factor
-        self.alpha = 0.2 # Wasay: learning rate
-        self.bin_width = 50 # Wasay: set the bin width
+        self.epsilon = epsilon # Wasay: SARSA and Qlearn parameter
+        self.gamma = gamma # Wasay: discount factor
+        self.alpha = alpha # Wasay: learning rate
+        self.bin_width = bin_width # Wasay: set the bin width
         self.Q = {} # Wasay: the Q-value dictionary Q[state] = [r_a_1,r_a_2]
-        self.specialinitialization=True
+        self.specialinitialization=specialinitialization
+        self.ql = ql
 
     def reset(self):
         self.last_state  = None
@@ -142,8 +145,11 @@ class Learner(object):
 
         # You might do some learning here based on the current state and the last state.
 
-        #current_action = self.SARSA(b_last_state,self.last_action,self.last_reward,b_current_state)
-        current_action = self.Qlearn(b_last_state,self.last_action,self.last_reward,b_current_state)
+        if self.ql:
+            current_action = self.Qlearn(b_last_state,self.last_action,self.last_reward,b_current_state)
+        else:
+            current_action = self.SARSA(b_last_state,self.last_action,self.last_reward,b_current_state)
+        
 
         # You'll need to select and action and return it.
         # Return 0 to swing and 1 to jump.
@@ -190,7 +196,9 @@ def run_games(learner, hist, iters = 300, t_len = 100):
 if __name__ == '__main__':
 
 	# Select agent.
-	agent = Learner()
+    ## Here you can change the parameters of the learner
+
+	agent = Learner(gamma=1,alpha=0.2,epsilon=1,bin_width=50,specialinitialization=True,ql=True)
 
 	# Empty list to save history.
 	hist = []
@@ -201,18 +209,18 @@ if __name__ == '__main__':
 	# Save history. 
 	np.save('hist',np.array(hist))
 
-hist1=hist
+#hist1=hist
 
 #df=pd.DataFrame(hist, columns=['Initialization0'])
-df['Initialization1']=hist1
-df['Initialization0_20ma']=pd.rolling_mean(df['Initialization0'],20,20)
-df['Initialization1_20ma']=pd.rolling_mean(df['Initialization1'],20,20)
+#df['Initialization1']=hist1
+#df['Initialization0_20ma']=pd.rolling_mean(df['Initialization0'],20,20)
+#df['Initialization1_20ma']=pd.rolling_mean(df['Initialization1'],20,20)
 
-plt.figure(figsize=(8,8))
-plt.plot(df['Initialization0'],'ro', markersize=4)
-plt.plot(df['Initialization1'],'bo', markersize=4)
-plt.plot(df['Initialization0_20ma'],'red',linewidth=2.0)
-plt.plot(df['Initialization1_20ma'],'blue',linewidth=1.5)
+#plt.figure(figsize=(8,8))
+#plt.plot(df['Initialization0'],'ro', markersize=4)
+#plt.plot(df['Initialization1'],'bo', markersize=4)
+#plt.plot(df['Initialization0_20ma'],'red',linewidth=2.0)
+#plt.plot(df['Initialization1_20ma'],'blue',linewidth=1.5)
 
 
-np.argmax([0,1])
+#np.argmax([0,1])
