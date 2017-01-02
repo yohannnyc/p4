@@ -20,6 +20,9 @@ class Learner(object):
         self.gamma = gamma # Wasay: discount factor
         self.alpha = alpha # Wasay: learning rate
         self.bin_width = bin_width # Wasay: set the bin width
+        ### Here we cannot only keep track of the highest reward for a state and the action 
+        ##### that yields that reward. We will have to keep track of all the rewards for all 
+        ####### the actions. One record would be [state, {action_x_reward} x \in actions].
         self.Q = {} # Wasay: the Q-value dictionary Q[state] = [r_a_1,r_a_2]
         self.specialinitialization=specialinitialization
         self.ql = ql
@@ -52,7 +55,8 @@ class Learner(object):
         # Epsilon greedy action:
         if npr.rand()<self.epsilon:
             # Pick a greedy action
-            current_action = np.argmax(self.Q[b_current_state])
+            ### Query 1 -- some complicated nested query ###
+            current_action = np.argmax(self.Q[b_current_state]) 
         else:
             # Pick a random action
             current_action = npr.rand()<0.5
@@ -62,6 +66,7 @@ class Learner(object):
         Q_ls_la = self.Q[b_last_state][last_action] # Q(S,a)
         Q_cs_ca = self.Q[b_current_state][current_action] # Q(S',a')
 
+        ### Query 2 -- update to some new value ###
         self.Q[b_last_state][last_action]= Q_ls_la + self.alpha*((self.last_reward + self.gamma*(Q_cs_ca)) - Q_ls_la)
 
         return current_action
@@ -105,9 +110,9 @@ class Learner(object):
             
             if b_current_state not in self.Q.keys():
                 if self.specialinitialization==True:
-                    if state['monkey']['bot']/ self.bin_width ==0 or state['monkey']['bot']/ self.bin_width ==1:
+                    if state['monkey']['bot']/ self.bin_width == 0 or state['monkey']['bot']/ self.bin_width == 1:
                         self.Q[b_current_state]=[0,1]
-                    elif state['monkey']['top']/ self.bin_width == 9 or state['monkey']['bot']/ self.bin_width ==8:
+                    elif state['monkey']['top']/ self.bin_width == 9 or state['monkey']['bot']/ self.bin_width == 8:
                         self.Q[b_current_state]=[1,0]
                     else:    
                         self.Q[b_current_state]=[0,0]
@@ -132,7 +137,7 @@ class Learner(object):
 
         if b_current_state not in self.Q.keys():
             if self.specialinitialization==True:
-                if state['monkey']['bot']/ self.bin_width ==0 or state['monkey']['bot']/ self.bin_width ==1:
+                if state['monkey']['bot']/ self.bin_width == 0 or state['monkey']['bot']/ self.bin_width ==1:
                     self.Q[b_current_state]=[0,1]
                 elif state['monkey']['top']/ self.bin_width == 9 or state['monkey']['bot']/ self.bin_width ==8:
                     self.Q[b_current_state]=[1,0]
@@ -198,7 +203,7 @@ if __name__ == '__main__':
 	# Select agent.
     ## Here you can change the parameters of the learner
 
-	agent = Learner(gamma=1,alpha=0.2,epsilon=1,bin_width=50,specialinitialization=True,ql=True)
+	agent = Learner(gamma=1,alpha=0.2,epsilon=1,bin_width=1,specialinitialization=True,ql=True)
 
 	# Empty list to save history.
 	hist = []
